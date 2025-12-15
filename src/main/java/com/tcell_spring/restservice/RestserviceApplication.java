@@ -18,8 +18,13 @@ public class RestserviceApplication {
 
 
 	public static void main(String[] args) {
+		SpringApplication.run(RestserviceApplication.class, args);
+//		runApplication(args);
+	}
 
-	    ApplicationContext context = SpringApplication.run(RestserviceApplication.class, args);
+	public static void runApplication(String[] args) {
+
+		ApplicationContext context = SpringApplication.run(RestserviceApplication.class, args);
 		String myBean = context.getBean("myBean", String.class);
 		log.info(myBean);
 		// spring context bean retrieval
@@ -49,7 +54,6 @@ public class RestserviceApplication {
 
 
 		// Bir servis içerisindeki Dependecy kısmını DI ile nasıl alıcağız.
-
 	}
 
 	// @Bean annotation to define a bean, register spring container
