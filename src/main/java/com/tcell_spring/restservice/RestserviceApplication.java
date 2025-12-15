@@ -1,6 +1,9 @@
 package com.tcell_spring.restservice;
 
+import com.tcell_spring.restservice.infra.TurkcellEmailSender;
+import com.tcell_spring.restservice.repository.UserRepository;
 import com.tcell_spring.restservice.service.UserService;
+import com.tcell_spring.restservice.service.UserServiceImp;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -24,17 +27,24 @@ public class RestserviceApplication {
 		log.info(user.getName());
 
 		// Stereotype.Service ile işaretlenmiş UserService bean'ini al ve kullan
-//		UserService userService = context.getBean(UserService.class);
-//		log.info(userService.getUserInfo());
+		UserService userService = context.getBean(UserService.class);
+		userService.save();
 
 
 		// DI olmasaydı Spring Context bunu yönetmeseydi
-		UserRepository userRepository = new UserRepository();
-		UserService userService2 = new UserService(userRepository);
-		userService2.getUserInfo();
-		log.info(userService2.getUserInfo());
+//		UserRepository userRepository = new UserRepository();
+//		TurkcellEmailSender turkcellEmailSender = new TurkcellEmailSender();
+//		UserService userService2 = new UserService(userRepository, turkcellEmailSender);
+//		userService2.getUserInfo();
+//		log.info(userService2.getUserInfo());
 
 		// Son Senaryo ise 1 adet interface üzerinden bu interfaceden implemente olan birden fazla class varsa nasıl bir spring context yönetimi olur ? @Qualifier ile ayırt edebiliriz. @Primary ile birini default yapabiliriz.
+
+
+		// Senaryo:2
+		UserServiceImp userServiceImp = context.getBean(UserServiceImp.class);
+		userServiceImp.save("turkcellEmailSender");
+
 
 
 
