@@ -3,6 +3,8 @@ import com.tcell_spring.restservice.entity.Comment;
 import com.tcell_spring.restservice.entity.Post;
 import com.tcell_spring.restservice.repository.ICommentRepository;
 import com.tcell_spring.restservice.repository.IPostRepository;
+import com.tcell_spring.restservice.request.comments.CommentCreateRequest;
+import com.tcell_spring.restservice.request.posts.PostChangeReleasedRequest;
 import com.tcell_spring.restservice.request.posts.PostCreateRequest;
 import com.tcell_spring.restservice.request.posts.PostUpdateRequest;
 import com.tcell_spring.restservice.response.comments.CommentDetailResponse;
@@ -94,7 +96,7 @@ public class PostsController {
 
     // api/v1/posts/1 -> HTTP PUT -> Update // 204
     @PutMapping("{id}")
-    public ResponseEntity<Void> updatePost(@PathVariable Integer id, @RequestBody PostUpdateRequest request) {
+    public ResponseEntity<String> updatePost(@PathVariable Integer id, @RequestBody PostUpdateRequest request) {
 
 
         Optional<Post> postOptional = postRepository.findById(id);
@@ -102,7 +104,8 @@ public class PostsController {
         // update işlemleri için ekstra veri tutarlılığı kontrolleri yapılabilir.
         if(request.getId() != null && !request.getId().equals(id)) {
             // request body'sindeki id ile path variable'daki id uyuşmuyorsa bad request döneriz.
-            return ResponseEntity.badRequest().build();
+            // 400 Bad Request Id uyuşmazlığı
+            return ResponseEntity.badRequest().body("Id in request body does not match Id in path variable");
         }
 
         if(postOptional.isPresent()) {
@@ -120,12 +123,17 @@ public class PostsController {
 
     // api/v1/posts/1/changeReleaseStatus -> HTTP PATCH -> Partial Update // 204
     @PatchMapping("{id}/changeReleaseStatus")
-    public ResponseEntity<Void> changeReleaseStatus(@PathVariable Integer id, @RequestBody Boolean request) {
+    public ResponseEntity<String> changeReleaseStatus(@PathVariable Integer id, @RequestBody PostChangeReleasedRequest request) {
         Optional<Post> postOptional = postRepository.findById(id);
+
+        // 400 Bad Request Id uyuşmazlığı
+        if(request.getPostId() != null && !request.getPostId().equals(id)) {
+            return ResponseEntity.badRequest().body("Id in request body does not match Id in path variable");
+        }
 
         if(postOptional.isPresent()) {
             Post post = postOptional.get();
-            post.setIsReleased(request);
+            post.setIsReleased(request.getIsReleased());
             postRepository.save(post);
             return ResponseEntity.noContent().build();
         }
@@ -155,6 +163,13 @@ public class PostsController {
     // api/v1/posts/1/comments -> HTTP GET -> Get Post Comments // 200
     @GetMapping("{postId}/comments")
     public ResponseEntity<List<CommentDetailResponse>> getPostComments(@PathVariable Integer postId) {
+
+        // Eğer böyle bir post yoksa 404 döneriz.
+        if(!postRepository.existsById(postId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+
         // Bu örnekte, yorumlar sabit bir liste olarak döndürülüyor.
         // Gerçek bir uygulamada, yorumlar veritabanından veya başka bir kaynaktan alınır.
         List<CommentDetailResponse> response = commentRepository.findByPostId(postId).stream().map(commentEntity ->{
@@ -168,15 +183,22 @@ public class PostsController {
 
     // api/v1/posts/1/comments -> HTTP POST -> Create Post Comment // 201
     @PostMapping("{postId}/comments")
-    public ResponseEntity<Comment> createPostComment(@PathVariable Integer postId,@RequestBody Comment request) {
+    public ResponseEntity<CommentDetailResponse> createPostComment(@PathVariable Integer postId,@RequestBody CommentCreateRequest request) {
 
         Optional<Post> optionalPost = postRepository.findById(postId);
 
         if(optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            request.setPost(post);
-            Comment savedComment = commentRepository.save(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedComment);
+
+            // request to entity mapping
+            Comment entity = new Comment();
+            BeanUtils.copyProperties(request,entity);
+            Comment savedComment = commentRepository.save(entity);
+
+            // Ekrana kayıt sonrası vereceğimiz response objesi
+            CommentDetailResponse commentResponse = new CommentDetailResponse();
+            BeanUtils.copyProperties(savedComment, commentResponse);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(commentResponse);
         } else {
             return ResponseEntity.notFound().build();
         }
