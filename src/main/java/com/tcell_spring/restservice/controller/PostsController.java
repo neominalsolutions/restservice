@@ -134,6 +134,8 @@ public class PostsController {
         }
     }
 
+    // Senaryo -> Eğer altında comment bulunan entity silinirse ne olur ? Cascade ayarları nasıl olmalı ?
+    // Üst nesne -> Post silindiği için Posta ait tüm alt nesnelerde (Comment) silindi.
     // api/v1/posts/1 -> HTTP DELETE -> Delete  // 204
     @DeleteMapping("{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Integer id) {
@@ -152,12 +154,16 @@ public class PostsController {
     // Nested Routes - Comments
     // api/v1/posts/1/comments -> HTTP GET -> Get Post Comments // 200
     @GetMapping("{postId}/comments")
-    public ResponseEntity<List<Comment>> getPostComments(@PathVariable Integer postId) {
+    public ResponseEntity<List<CommentDetailResponse>> getPostComments(@PathVariable Integer postId) {
         // Bu örnekte, yorumlar sabit bir liste olarak döndürülüyor.
         // Gerçek bir uygulamada, yorumlar veritabanından veya başka bir kaynaktan alınır.
-        List<Comment> comments = commentRepository.findByPostId(postId);
+        List<CommentDetailResponse> response = commentRepository.findByPostId(postId).stream().map(commentEntity ->{
+            CommentDetailResponse commentResponse = new CommentDetailResponse();
+            BeanUtils.copyProperties(commentEntity, commentResponse);
+            return commentResponse;
+        }).toList();
 
-        return ResponseEntity.ok(comments);
+        return ResponseEntity.ok(response);
     }
 
     // api/v1/posts/1/comments -> HTTP POST -> Create Post Comment // 201
