@@ -10,6 +10,7 @@ import com.tcell_spring.restservice.request.posts.PostUpdateRequest;
 import com.tcell_spring.restservice.response.comments.CommentDetailResponse;
 import com.tcell_spring.restservice.response.posts.PostCreateResponse;
 import com.tcell_spring.restservice.response.posts.PostDetailResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,8 +82,9 @@ public class PostsController {
 
     // api/v1/posts -> HTTP POST -> Create // 201
     // @RequestBody ile gelen request body'sini yakalarız. dışarıdan uygulamaya json formatında veri gönderildiğinde bu anotasyon kullanılır.
+    // @Valid anatasyonu ile request objesi üzerinde tanımlanan validation kuralları çalıştırılır.
     @PostMapping
-    public ResponseEntity<PostCreateResponse> createPost(@RequestBody PostCreateRequest request) {
+    public ResponseEntity<PostCreateResponse> createPost(@Valid @RequestBody PostCreateRequest request) {
 
         Post postEntity = new Post();
         BeanUtils.copyProperties(request,postEntity);  // request'ten entity'e verileri kopyala
