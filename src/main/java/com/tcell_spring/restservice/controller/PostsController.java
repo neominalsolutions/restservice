@@ -3,6 +3,9 @@ import com.tcell_spring.restservice.entity.Comment;
 import com.tcell_spring.restservice.entity.Post;
 import com.tcell_spring.restservice.repository.ICommentRepository;
 import com.tcell_spring.restservice.repository.IPostRepository;
+import com.tcell_spring.restservice.response.comments.CommentDetailResponse;
+import com.tcell_spring.restservice.response.posts.PostDetailResponse;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,16 +35,30 @@ public class PostsController {
     // @PathVariable -> Path üzerinden gelen parametreleri yakalamak için kullanılır.
     // api/v1/posts/1 -> HTTP GET -> Detail // 200
     @GetMapping("{id}")
-    public ResponseEntity<Post> getPostById(@PathVariable Integer id) {
+    public ResponseEntity<PostDetailResponse> getPostById(@PathVariable Integer id) {
 
         // eğer kayıt varsa 200 ile birlikte kaydı döner
 
        Optional<Post> postOptional = postRepository.findById(id);
 
-       // optional ifadeler maplenebilir. streamler gibi düşünülebilir.
-        return postOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+       if(postOptional.isPresent()) {
+           PostDetailResponse response = new PostDetailResponse();
+           // Response objesine entity'deki verileri kopyala
+           BeanUtils.copyProperties(postOptional.get(), response);
 
-        // kayıt bulunamazsa 404 döner
+          List<CommentDetailResponse> commentResponse = postOptional.get().getComments().stream().map(commentEntity-> {
+                       CommentDetailResponse commentDto = new CommentDetailResponse();
+                       BeanUtils.copyProperties(commentEntity, commentDto);
+                       return commentDto;
+                   }).toList();
+
+           response.setComments(commentResponse);
+
+           return ResponseEntity.ok(response);
+       } else {
+           // kayıt bulunamazsa 404 döner
+           return ResponseEntity.notFound().build();
+       }
     }
 
     // api/v1/posts -> HTTP POST -> Create // 201

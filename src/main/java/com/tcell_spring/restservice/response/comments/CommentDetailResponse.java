@@ -3,9 +3,11 @@ package com.tcell_spring.restservice.response.comments;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class CommentDetailResponse{
     @JsonProperty( "comment_id" )
     public Integer id;
