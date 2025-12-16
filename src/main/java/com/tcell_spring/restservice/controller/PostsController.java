@@ -52,20 +52,49 @@ public class PostsController {
 
     // api/v1/posts/1 -> HTTP PUT -> Update // 204
     @PutMapping("{id}")
-    public String updatePost(@PathVariable Integer id, @RequestBody String request) {
-        return "Post Updated";
+    public ResponseEntity<Void> updatePost(@PathVariable Integer id, @RequestBody Post request) {
+
+
+        Optional<Post> postOptional = postRepository.findById(id);
+
+        if(postOptional.isPresent()) {
+            postRepository.save(request); // save hem create hem update için kullanılır. id veritabanında eşleşiyorsa update yapar.
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
     // api/v1/posts/1/changeReleaseStatus -> HTTP PATCH -> Partial Update // 204
     @PatchMapping("{id}/changeReleaseStatus")
-    public String changeReleaseStatus(@PathVariable Integer id, @RequestBody String request) {
-        return "Post Partially Updated";
+    public ResponseEntity<Void> changeReleaseStatus(@PathVariable Integer id, @RequestBody Boolean request) {
+        Optional<Post> postOptional = postRepository.findById(id);
+
+        if(postOptional.isPresent()) {
+            Post post = postOptional.get();
+            post.setIsReleased(request);
+            postRepository.save(post);
+            return ResponseEntity.noContent().build();
+        }
+        else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // api/v1/posts/1 -> HTTP DELETE -> Delete  // 204
     @DeleteMapping("{id}")
-    public String deletePost(@PathVariable Integer id) {
-        return "Post Deleted";
+    public ResponseEntity<Void> deletePost(@PathVariable Integer id) {
+
+        Optional<Post> postOptional = postRepository.findById(id);
+
+        if(postOptional.isPresent()) {
+            postRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
 }
