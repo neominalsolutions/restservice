@@ -3,13 +3,16 @@ import com.tcell_spring.restservice.entity.Comment;
 import com.tcell_spring.restservice.entity.Post;
 import com.tcell_spring.restservice.repository.ICommentRepository;
 import com.tcell_spring.restservice.repository.IPostRepository;
+import com.tcell_spring.restservice.request.posts.PostCreateRequest;
 import com.tcell_spring.restservice.response.comments.CommentDetailResponse;
+import com.tcell_spring.restservice.response.posts.PostCreateResponse;
 import com.tcell_spring.restservice.response.posts.PostDetailResponse;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,11 +79,16 @@ public class PostsController {
     // api/v1/posts -> HTTP POST -> Create // 201
     // @RequestBody ile gelen request body'sini yakalarız. dışarıdan uygulamaya json formatında veri gönderildiğinde bu anotasyon kullanılır.
     @PostMapping
-    public ResponseEntity<Post> createPost(@RequestBody Post request) {
+    public ResponseEntity<PostCreateResponse> createPost(@RequestBody PostCreateRequest request) {
 
-       Post entity = postRepository.save(request);
+        Post postEntity = new Post();
+        BeanUtils.copyProperties(request,postEntity);  // request'ten entity'e verileri kopyala
+
+       Post entity = postRepository.save(postEntity);
        // new ResponseEntity<>(entity, HttpStatus.CREATED);
-        return ResponseEntity.status(HttpStatus.CREATED).body(entity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new PostCreateResponse(entity.getId(), LocalDateTime.now())
+        );
     }
 
     // api/v1/posts/1 -> HTTP PUT -> Update // 204
