@@ -1,5 +1,7 @@
 package com.tcell_spring.restservice.controller;
+import com.tcell_spring.restservice.entity.Comment;
 import com.tcell_spring.restservice.entity.Post;
+import com.tcell_spring.restservice.repository.ICommentRepository;
 import com.tcell_spring.restservice.repository.IPostRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,11 @@ import java.util.Optional;
 public class PostsController {
 
     private final IPostRepository postRepository;
+    private final ICommentRepository commentRepository;
 
-    public PostsController(IPostRepository postRepository) {
+    public PostsController(IPostRepository postRepository, ICommentRepository commentRepository) {
         this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
     }
 
     // api/v1/posts -> HTTP GET -> List // 200
@@ -96,5 +100,42 @@ public class PostsController {
         }
 
     }
+
+    // Nested Routes - Comments
+    // api/v1/posts/1/comments -> HTTP GET -> Get Post Comments // 200
+    @GetMapping("{postId}/comments")
+    public ResponseEntity<List<Comment>> getPostComments(@PathVariable Integer postId) {
+        // Bu örnekte, yorumlar sabit bir liste olarak döndürülüyor.
+        // Gerçek bir uygulamada, yorumlar veritabanından veya başka bir kaynaktan alınır.
+        List<Comment> comments = commentRepository.findByPostId(postId);
+
+        return ResponseEntity.ok(comments);
+    }
+
+    // api/v1/posts/1/comments -> HTTP POST -> Create Post Comment // 201
+    @PostMapping("{postId}/comments")
+    public ResponseEntity<Comment> createPostComment(@PathVariable Integer postId,@RequestBody Comment request) {
+
+        Optional<Post> optionalPost = postRepository.findById(postId);
+
+        if(optionalPost.isPresent()) {
+            Post post = optionalPost.get();
+            request.setPost(post);
+            Comment savedComment = commentRepository.save(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedComment);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // cohesion artırmak için yorum oluşturma işlemi burada yapıldı.
+    // Bu sayede bir post ile ilgili tüm işlemler tek controllerda toplanmış oldu.
+
+    // Bir yazılımın kalite standartı genel olarak 2 faktöre bağlıdır:
+    // Cohesion (İçsel Bağlılık): Bir modülün veya bile
+    // Coupling (Bağımlılık): Modüller arasındaki bağımlılıkların azlığı.
+    // Düşük coupling, modüllerin birbirinden bağımsız çalışabilmesini sağlar
+    // Yüksek cohesion ise bir modülün kendi içinde tutarlı ve odaklanmış olmasını ifade eder.
+    // Yüksek cohesion ve düşük coupling, yazılımın bakımını, genişletilmesini ve test edilmesini kolaylaştırır.
 
 }
