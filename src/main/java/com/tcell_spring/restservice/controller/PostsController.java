@@ -4,6 +4,7 @@ import com.tcell_spring.restservice.entity.Post;
 import com.tcell_spring.restservice.repository.ICommentRepository;
 import com.tcell_spring.restservice.repository.IPostRepository;
 import com.tcell_spring.restservice.request.posts.PostCreateRequest;
+import com.tcell_spring.restservice.request.posts.PostUpdateRequest;
 import com.tcell_spring.restservice.response.comments.CommentDetailResponse;
 import com.tcell_spring.restservice.response.posts.PostCreateResponse;
 import com.tcell_spring.restservice.response.posts.PostDetailResponse;
@@ -93,13 +94,23 @@ public class PostsController {
 
     // api/v1/posts/1 -> HTTP PUT -> Update // 204
     @PutMapping("{id}")
-    public ResponseEntity<Void> updatePost(@PathVariable Integer id, @RequestBody Post request) {
+    public ResponseEntity<Void> updatePost(@PathVariable Integer id, @RequestBody PostUpdateRequest request) {
 
 
         Optional<Post> postOptional = postRepository.findById(id);
 
+        // update işlemleri için ekstra veri tutarlılığı kontrolleri yapılabilir.
+        if(request.getId() != null && !request.getId().equals(id)) {
+            // request body'sindeki id ile path variable'daki id uyuşmuyorsa bad request döneriz.
+            return ResponseEntity.badRequest().build();
+        }
+
         if(postOptional.isPresent()) {
-            postRepository.save(request); // save hem create hem update için kullanılır. id veritabanında eşleşiyorsa update yapar.
+            // idsine göre bulduğu entity'nin verilerini request'ten gelen verilerle güncelle
+            // postOptional.get() -> entity
+
+            BeanUtils.copyProperties(request,postOptional.get());
+            postRepository.save(postOptional.get()); // save hem create hem update için kullanılır. id veritabanında eşleşiyorsa update yapar.
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
