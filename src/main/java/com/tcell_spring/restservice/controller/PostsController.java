@@ -29,8 +29,19 @@ public class PostsController {
 
     // api/v1/posts -> HTTP GET -> List // 200
     @GetMapping
-    public ResponseEntity<List<Post>> getPosts() {
-        return ResponseEntity.ok(postRepository.findAll());
+    public ResponseEntity<List<PostDetailResponse>> getPosts() {
+
+        List<PostDetailResponse> response = postRepository.findAll().stream().map(postEntity ->
+             new PostDetailResponse(
+                    postEntity.getId(),
+                    postEntity.getTitle(),
+                    postEntity.getContent(),
+                    postEntity.getIsReleased(),
+                    postEntity.getReleaseDate(),
+                    null // yorumlar eklenmedi -> Liste ekranları Data Grid üzerinde gösterilir detay gösterecek kadar alan yoktur. Fetch performansı için yorumlar eklenmedi. Tek bir sorgu ile sadece Post verileri çekildi.
+            )).toList();
+
+        return ResponseEntity.ok(response);
     }
     // @PathVariable -> Path üzerinden gelen parametreleri yakalamak için kullanılır.
     // api/v1/posts/1 -> HTTP GET -> Detail // 200
@@ -45,6 +56,7 @@ public class PostsController {
            PostDetailResponse response = new PostDetailResponse();
            // Response objesine entity'deki verileri kopyala
            BeanUtils.copyProperties(postOptional.get(), response);
+           // modelmapper yerine spring'in kendi BeanUtils kütüphanesi kullanıldı. Performans açısından daha iyi sonuç verir.
 
           List<CommentDetailResponse> commentResponse = postOptional.get().getComments().stream().map(commentEntity-> {
                        CommentDetailResponse commentDto = new CommentDetailResponse();
