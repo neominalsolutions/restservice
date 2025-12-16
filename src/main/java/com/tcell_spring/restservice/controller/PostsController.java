@@ -214,4 +214,8 @@ public class PostsController {
     // Yüksek cohesion ise bir modülün kendi içinde tutarlı ve odaklanmış olmasını ifade eder.
     // Yüksek cohesion ve düşük coupling, yazılımın bakımını, genişletilmesini ve test edilmesini kolaylaştırır.
 
+
+    // Post ile Comment kaydını aynı transaction içerisinde Nasıl yapılabilir.
+    // Bu örneği yapalım -> CascadeType.PERSIST işe yarayacak.
+
 }
