@@ -37,7 +37,7 @@ public class Post {
     private LocalDateTime releaseDate;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
     // null reference hatasını önlemek için boş bir liste ile başlatıldı.
 }
 

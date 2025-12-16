@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -205,6 +207,49 @@ public class PostsController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // Not: Test etmek amaçlı yapıldı.
+    // api/v1/posts/withComments -> HTTP POST -> Create Post with Comments //
+
+    // Not: CascadeType.PERSIST veya ALL seçili olmasaydı bu özellikten faydalanamazdık.
+    @PostMapping("withComments")
+    public ResponseEntity<Post> createPostWithComments() {
+
+        Optional<Post> postEntityOptional =  postRepository.findById(1);
+
+        if(postEntityOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        Post postEntity = postEntityOptional.get();
+
+        // Yeni bir yorum oluştur
+        Comment comment1 = new Comment();
+        comment1.setContent("Bu birinci yorumdur.");
+        comment1.setPostId(1); // Yorumun hangi post'a ait olduğunu belirt
+        comment1.setPost(postEntity);
+
+        // veritabanından findById ile çekilen entity'nin comments listesi dolu geleceği için direkt ekleme yapabiliriz.
+        postEntity.getComments().add(comment1);
+
+        Comment comment2 = new Comment();
+        comment2.setContent("Bu ikinci yorumdur.");
+        comment2.setPostId(1);
+        comment1.setPost(postEntity);
+        postEntity.getComments().add(comment2);
+
+        // Aggregate Root Post Entity -> Child Entity Comment -> Bu geliştirme yaklaşımı Domain Centric Design (DDD) prensiplerine uygundur.
+        // ORM tooları ilişikli nesnelerde işlem yaparken parent-child ilişkisini yönetmek için CascadeType ayarlarını kullanır.
+        // Bu örnekte ise Post entity üzerinden Child Entity Comment kayıdı Post Repository ile yapıldı. CommentRepository'e ihtiyaç kalmadı.
+
+        // Aggregate Root olan Post entity'sini kaydet dediğimizde aynı transaction içerisinde bağlı alt nesnelerde (Comment) kaydedilir. CascadeType.PERSIST sayesinde.
+        Post response = postRepository.save(postEntity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+
+
 
     // cohesion artırmak için yorum oluşturma işlemi burada yapıldı.
     // Bu sayede bir post ile ilgili tüm işlemler tek controllerda toplanmış oldu.
