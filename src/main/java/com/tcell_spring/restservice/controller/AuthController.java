@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.SecureRandom;
+import java.util.Random;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -29,8 +32,11 @@ public class AuthController {
     @PostMapping("register")
     public ResponseEntity<String> register() {
 
+        Random random = new SecureRandom();
+        int index =  random.nextInt(0,100);
+
         AppUser appUser = new AppUser();
-        appUser.setUsername("user");
+        appUser.setUsername("user_" + index);
         appUser.setPassword(passwordEncoder.encode("P@ssword1"));
         appUserRepository.save(appUser);
 
