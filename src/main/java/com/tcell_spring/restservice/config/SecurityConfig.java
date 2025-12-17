@@ -1,6 +1,7 @@
 package com.tcell_spring.restservice.config;
 
 
+import com.tcell_spring.restservice.repository.IAppUserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +20,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {
 
+    private final IAppUserRepository appUserRepository;
+
+    public SecurityConfig(IAppUserRepository appUserRepository) {
+        this.appUserRepository = appUserRepository;
+    }
+
     // Bazı önemli beanleri tanımlayacağız
 
     // Kullanıcı detayları repositoryden yükelemek için kullanılan bean
@@ -27,7 +34,7 @@ public class SecurityConfig {
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                return null;
+                return appUserRepository.findByUsername(username);
             }
         };
     }
