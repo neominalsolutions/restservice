@@ -2,8 +2,8 @@ package com.tcell_spring.restservice.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Generated;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -24,10 +24,20 @@ public class AppUser implements UserDetails {
     private String username;
     private String password;
 
+    // User ile birlikte Rolleri yüklemek için EAGER fetch tipi kullanıyoruz
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "user_authorities",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "authority_id")
+    )
+    private List<AppUserAuthority> authorities;
+
+    // ROLE_USER veya SCOPE_READ_POSTS
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return authorities.stream().map(a-> new SimpleGrantedAuthority(a.getName())).toList();
     }
 
 

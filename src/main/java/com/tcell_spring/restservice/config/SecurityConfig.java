@@ -8,9 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,6 +24,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @Slf4j
+@EnableMethodSecurity // method seviyesinde güvenlik anotasyonlarını etkinleştirir
+@EnableWebSecurity // web güvenliği için gerekli yapılandırmayı etkinleştirir
 public class SecurityConfig {
 
     private final IAppUserRepository appUserRepository;
@@ -74,6 +77,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/h2-console/**","/api/v1/auth/**")
                     .permitAll()
+                    .requestMatchers("/api/v1/posts/**").hasAuthority("SCOPE_READ_POSTS") // sadece read_posts scope'u olan erişebilir endpoint tanımları yaptık. Route düzeyinde yetkilendirme
                     .anyRequest()
                     .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS));

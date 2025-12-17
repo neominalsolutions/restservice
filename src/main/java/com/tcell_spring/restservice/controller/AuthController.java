@@ -8,6 +8,7 @@ import com.tcell_spring.restservice.request.auth.LoginRequest;
 import com.tcell_spring.restservice.request.auth.RegisterRequest;
 import com.tcell_spring.restservice.response.auth.TokenResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,6 +37,7 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.tokenService = tokenService;
     }
+
 
     @PostMapping("register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
