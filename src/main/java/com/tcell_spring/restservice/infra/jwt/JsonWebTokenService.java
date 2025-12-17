@@ -53,7 +53,7 @@ public class JsonWebTokenService  implements ITokenService{
                 .setSubject(userDetails.getUsername())
                 .addClaims(claims)// Token sahibi kullanıcı adı
                 .setIssuedAt(new Date()) // Token oluşturulma tarihi
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60  * 10)) // 10 dakika geçerli
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60  * 15)) // 15 dakika geçerli
                 .signWith(getSigningKey(),SignatureAlgorithm.HS512) // İmzalama algoritması ve anahtarı
                 .compact();
     }
