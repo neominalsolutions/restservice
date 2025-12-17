@@ -12,6 +12,10 @@ import com.tcell_spring.restservice.response.posts.PostCreateResponse;
 import com.tcell_spring.restservice.response.posts.PostDetailResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -248,6 +252,42 @@ public class PostsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+
+    // Çoklu verilerde sayfa işlemlerini JPA üzerinden nasıl yönetiriz ?
+    // Pagination, Sorting, Filtering işlemleri nasıl yapılır ?
+    // Bu işlemler için Spring Data JPA'nın sağladığı Pageable interface'i kullanılır.
+    // Bu konu ilerleyen derslerde detaylı olarak ele alınacaktır.
+
+    // api/v1/posts/paged?page=0&size=10 -> HTTP GET -> Get Posts Paged // 200
+    //  @RequestParam -> Query string üzerinden gelen parametreleri yakalamak için kullanılır.
+    // localhost:8080/api/v1/posts/q?page=2&size=5&sortBy=title&sortDir=desc
+    @GetMapping("q")
+    public ResponseEntity<Page<PostDetailResponse>> getPostsPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir
+    ) {
+
+        // default ilk sayfa 0'dan başlar.
+        page = page == 1 ? 0 : page -1; // kullanıcı 1'den başlatmak isterse diye ayarlandı.
+
+        Pageable pageable = !sortDir.equals("desc") ? PageRequest.of(page, size,
+                Sort.by(sortBy).ascending()
+        ) : PageRequest.of(page, size,
+                Sort.by(sortBy).descending());
+
+        Page<PostDetailResponse> postPage = postRepository.findAll(pageable).map(postEntity -> {
+            PostDetailResponse response = new PostDetailResponse();
+            BeanUtils.copyProperties(postEntity, response);
+            return response;
+        });
+
+
+
+         return ResponseEntity.ok(postPage);
+
+    }
 
 
 
