@@ -266,7 +266,8 @@ public class PostsController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(defaultValue = "" ) String title
     ) {
 
         // default ilk sayfa 0'dan başlar.
@@ -277,7 +278,7 @@ public class PostsController {
         ) : PageRequest.of(page, size,
                 Sort.by(sortBy).descending());
 
-        Page<PostDetailResponse> postPage = postRepository.findAll(pageable).map(postEntity -> {
+        Page<PostDetailResponse> postPage = postRepository.findAllByTitleContainsIgnoreCase(title,pageable).map(postEntity -> {
             PostDetailResponse response = new PostDetailResponse();
             BeanUtils.copyProperties(postEntity, response);
             return response;
