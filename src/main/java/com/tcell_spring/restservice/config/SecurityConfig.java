@@ -1,7 +1,10 @@
 package com.tcell_spring.restservice.config;
 
 
+import com.tcell_spring.restservice.filter.jwt.JwtFilter;
 import com.tcell_spring.restservice.repository.IAppUserRepository;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,14 +19,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@Slf4j
 public class SecurityConfig {
 
     private final IAppUserRepository appUserRepository;
+    private final JwtFilter jwtFilter;
 
-    public SecurityConfig(IAppUserRepository appUserRepository) {
+    public SecurityConfig(IAppUserRepository appUserRepository, JwtFilter jwtFilter) {
         this.appUserRepository = appUserRepository;
+        this.jwtFilter = jwtFilter;
     }
 
     // Bazı önemli beanleri tanımlayacağız
@@ -70,6 +77,23 @@ public class SecurityConfig {
                     .anyRequest()
                     .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS));
+
+        // JwtFilter'ı UsernamePasswordAuthenticationFilter'dan önce ekliyoruz
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Authentication Hatalarını handle etme işleme alma gibi bir durumda ortaya çıkacak.
+        http.exceptionHandling(exception -> {
+            exception.authenticationEntryPoint((request, response, authException) -> {
+                log.error(authException.getMessage(), authException);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+
+            });
+            exception.accessDeniedHandler((request, response, accessDeniedException) -> {
+                log.error(accessDeniedException.getMessage(), accessDeniedException);
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
+            });
+        });
+
         return http.build();
     }
 
