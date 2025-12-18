@@ -75,7 +75,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable) // api olması sebebi ile csrf kapatıldı
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // h2-console frame hatası için eklendi, iframe izin verildi
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/h2-console/**","/api/v1/auth/**")
+                    .requestMatchers("/h2-console/**","/api/v1/auth/**","/swagger-ui/**","/v3/api-docs/**")
                     .permitAll()
                     // .requestMatchers("/api/v1/posts/**").hasAuthority("SCOPE_READ_POSTS") // sadece read_posts scope'u olan erişebilir endpoint tanımları yaptık. Route düzeyinde yetkilendirme
                     .anyRequest()

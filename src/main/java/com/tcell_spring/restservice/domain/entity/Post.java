@@ -1,6 +1,8 @@
 package com.tcell_spring.restservice.domain.entity;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +18,7 @@ import java.util.List;
 @Data // Getter ve Setter metodlarını otomatik olarak oluşturur.
 @AllArgsConstructor
 @NoArgsConstructor
+@Hidden
 public class Post {
 
     @Id // Entity'nin birincil anahtarını belirtir. PK

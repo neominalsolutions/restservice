@@ -1,8 +1,6 @@
 package com.tcell_spring.restservice.presentation.controller;
 import com.tcell_spring.restservice.application.handler.PostRequestHandler;
 import com.tcell_spring.restservice.domain.entity.Post;
-import com.tcell_spring.restservice.infra.repository.ICommentRepository;
-import com.tcell_spring.restservice.infra.repository.IPostRepository;
 import com.tcell_spring.restservice.application.request.comments.CommentCreateRequest;
 import com.tcell_spring.restservice.application.request.posts.PostChangeReleasedRequest;
 import com.tcell_spring.restservice.application.request.posts.PostCreateRequest;
@@ -10,6 +8,10 @@ import com.tcell_spring.restservice.application.request.posts.PostUpdateRequest;
 import com.tcell_spring.restservice.application.response.comments.CommentDetailResponse;
 import com.tcell_spring.restservice.application.response.posts.PostCreateResponse;
 import com.tcell_spring.restservice.application.response.posts.PostDetailResponse;
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
@@ -24,6 +26,7 @@ import java.util.List;
 // Bu controller sorumluluğu ise doğru usecase'e yönlendirmektir.
 @RestController
 @RequestMapping("/api/v1/posts") // resources için endpoint tanımı
+@Tag(name = "Posts", description = "Operations related to Posts")
 public class PostsController {
 
     private final PostRequestHandler postRequestHandler;
@@ -41,6 +44,11 @@ public class PostsController {
     // @PathVariable -> Path üzerinden gelen parametreleri yakalamak için kullanılır.
     // api/v1/posts/1 -> HTTP GET -> Detail // 200
     @GetMapping("{id}")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Post found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Post not found")
+    })
+    @Operation(summary = "Get Post by ID", description = "Retrieve a post by its unique ID")
     public ResponseEntity<PostDetailResponse> getPostById(@PathVariable Integer id) {
         // eğer kayıt varsa 200 ile birlikte kaydı döner
       return ResponseEntity.ok(postRequestHandler.getPostById(id));
