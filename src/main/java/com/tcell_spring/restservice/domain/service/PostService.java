@@ -43,7 +43,7 @@ public class PostService {
 
        if(post.isPresent()){
            Post data = post.get();
-           BeanUtils.copyProperties(entity, data, "createdAt", "isReleased");
+           BeanUtils.copyProperties(entity, data, "createdAt", "isReleased","releaseDate");
            this.postRepository.save(data);
        } else {
            throw new EntityNotFoundException("Post not found.");
@@ -71,6 +71,9 @@ public class PostService {
         Optional<Post> post =  this.postRepository.findById(id);
 
         if(post.isPresent()){
+
+
+
             post.get().setIsReleased(status);
             this.postRepository.save(post.get());
         } else {
