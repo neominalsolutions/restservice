@@ -1,9 +1,7 @@
 package com.tcell_spring.restservice;
 
-import com.tcell_spring.restservice.infra.TurkcellEmailSender;
-import com.tcell_spring.restservice.repository.UserRepository;
-import com.tcell_spring.restservice.service.UserService;
-import com.tcell_spring.restservice.service.UserServiceImp;
+import com.tcell_spring.restservice.domain.service.UserService;
+import com.tcell_spring.restservice.domain.service.UserServiceImp;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
